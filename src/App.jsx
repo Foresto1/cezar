@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import './App.css'
 
 const ALFABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -21,17 +21,34 @@ function App() {
   const [tekst, setTekst] = useState('')
   const [przesuniecie, setPrzesuniecie] = useState(1)
   const [liczbaZaszyfrowanych, setLiczbaZaszyfrowanych] = useState(0)
+  const timery = useRef([])
 
   const litery = [...tekst].filter((znak) => ALFABET.includes(znak))
 
   function zmienTekst(event) {
+    timery.current.forEach(clearTimeout)
+    timery.current = []
     setTekst(event.target.value.toUpperCase())
     setLiczbaZaszyfrowanych(0)
   }
 
   function zmienPrzesuniecie(event) {
+    timery.current.forEach(clearTimeout)
+    timery.current = []
     setPrzesuniecie(Number(event.target.value))
     setLiczbaZaszyfrowanych(0)
+  }
+
+  function szyfrujCala() {
+    const start = liczbaZaszyfrowanych
+
+    litery.slice(start).forEach((_, index) => {
+      const timer = setTimeout(() => {
+        setLiczbaZaszyfrowanych(start + index + 1)
+      }, index * 200)
+
+      timery.current.push(timer)
+    })
   }
 
   return (
@@ -39,12 +56,14 @@ function App() {
       <h1>Szyfr Cezara</h1>
 
       <label>
-       
+       Tekst:
         <input type="text" value={tekst} onChange={zmienTekst} placeholder="Wpisz tekst..." />
+        <br />
       </label>
 
       <label>
-         {przesuniecie}
+        O ile? : 
+          {przesuniecie}
         <input type="range" min="1" max="25" value={przesuniecie} onChange={zmienPrzesuniecie} />
       </label>
 
@@ -60,6 +79,9 @@ function App() {
         Następna litera
       </button>
 
+      <button onClick={szyfrujCala} disabled={liczbaZaszyfrowanych === litery.length}>
+        Zaszyfruj całość
+      </button>
     </main>
   )
 }
